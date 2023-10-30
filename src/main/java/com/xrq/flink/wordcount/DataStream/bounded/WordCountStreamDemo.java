@@ -1,4 +1,4 @@
-package com.xrq.flink.wordcount.DataStream;
+package com.xrq.flink.wordcount.DataStream.bounded;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.functions.KeySelector;
@@ -10,21 +10,21 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 
 /**
- * TODO DataStream实现Wordcount：读文件（有界流）
+ *  DataStream实现Wordcount：读文件（有界流）
  *
  * @author cjp
  * @version 1.0
  */
 public class WordCountStreamDemo {
     public static void main(String[] args) throws Exception {
-        // TODO 1.创建执行环境
+        //  1.创建执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        // TODO 2.读取数据:从文件读
-        DataStreamSource<String> lineDS = env.readTextFile("input/word.txt");
+        //  2.读取数据:从文件读
+        DataStreamSource<String> lineDS = env.readTextFile("input/words.txt");
 
-        // TODO 3.处理数据: 切分、转换、分组、聚合
-        // TODO 3.1 切分、转换
+        //  3.处理数据: 切分、转换、分组、聚合
+        //  3.1 切分、转换
         SingleOutputStreamOperator<Tuple2<String, Integer>> wordAndOneDS = lineDS
                 .flatMap(new FlatMapFunction<String, Tuple2<String, Integer>>() {
                     @Override
@@ -39,7 +39,7 @@ public class WordCountStreamDemo {
                         }
                     }
                 });
-        // TODO 3.2 分组
+        //  3.2 分组
         KeyedStream<Tuple2<String, Integer>, String> wordAndOneKS = wordAndOneDS.keyBy(
                 new KeySelector<Tuple2<String, Integer>, String>() {
                     @Override
@@ -48,13 +48,13 @@ public class WordCountStreamDemo {
                     }
                 }
         );
-        // TODO 3.3 聚合
+        //  3.3 聚合 从0开始 1代表第2个
         SingleOutputStreamOperator<Tuple2<String, Integer>> sumDS = wordAndOneKS.sum(1);
 
-        // TODO 4.输出数据
+        //  4.输出数据
         sumDS.print();
 
-        // TODO 5.执行：类似 sparkstreaming最后 ssc.start()
+        //  5.执行：类似 sparkstreaming最后 ssc.start()
         env.execute();
     }
 }
